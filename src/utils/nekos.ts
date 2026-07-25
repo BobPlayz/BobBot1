@@ -1,10 +1,7 @@
 export type ActionType = "slap" | "bite" | "pinch" | "kill";
 export type Mood = "playful" | "mean";
 
-const moodMap: Record<
-  ActionType,
-  Record<Mood, { api: "nekos" | "waifu"; endpoint: string }>
-> = {
+const moodMap: Record<ActionType, Record<Mood, { api: "nekos" | "waifu"; endpoint: string }>> = {
   slap: {
     playful: { api: "nekos", endpoint: "pat" },
     mean: { api: "nekos", endpoint: "slap" },
@@ -23,53 +20,66 @@ const moodMap: Record<
   },
 };
 
-export const actionColors: Record<ActionType, number> = {
-  slap: 0xff4d6d,
-  bite: 0xff8fab,
-  pinch: 0xffc300,
-  kill: 0x8b0000,
+export const actionColors = {
+  slap: {
+    playful: 0x57f287,
+    mean: 0xed4245,
+  },
+  bite: {
+    playful: 0x5865f2,
+    mean: 0xed4245,
+  },
+  pinch: {
+    playful: 0xfaa61a,
+    mean: 0xed4245,
+  },
+  kill: {
+    playful: 0xfee75c,
+    mean: 0x2b2d31,
+  },
 };
 
-export const actionLabels: Record<ActionType, string> = {
-  slap: "slapped",
-  bite: "bit",
-  pinch: "pinched",
-  kill: "killed",
+export const actionLabels = {
+  slap: {
+    playful: "playfully slapped",
+    mean: "slapped",
+  },
+  bite: {
+    playful: "playfully bit",
+    mean: "bit",
+  },
+  pinch: {
+    playful: "playfully pinched",
+    mean: "pinched",
+  },
+  kill: {
+    playful: "pretended to eliminate",
+    mean: "eliminated",
+  },
 };
 
-export function moodFooter(mood: Mood): string {
-  return mood === "playful"
-    ? "😊 Playful mood detected"
-    : "😈 Mean mood detected";
-}
+export const moodFooter = {
+  playful: "Playful mood detected",
+  mean: "Chaotic mood detected",
+};
 
-export function detectMood(messages: Array<{ authorId: string; content: string }>): Mood {
-  const meanWords = [
-    "hate",
-    "idiot",
-    "stupid",
-    "loser",
-    "kill",
-    "die",
-    "trash",
-    "dumb",
-    "shut up",
-    "fk",
-    "fuck",
-    "bitch",
-  ];
-
+export function detectMood(
+  messages: Array<{ authorId: string; content: string }>,
+  actorId: string,
+  targetId: string,
+): Mood {
   let score = 0;
 
   for (const msg of messages) {
+    if (msg.authorId !== actorId && msg.authorId !== targetId) continue;
+
     const text = msg.content.toLowerCase();
 
-    if (meanWords.some((w) => text.includes(w))) {
-      score++;
-    }
+    if (/(lol|lmao|😂|🤣|❤️|💀|bro|xd|hehe|haha)/.test(text)) score++;
+    if (/(idiot|stupid|hate|kill|die|fuck|bitch|loser)/.test(text)) score--;
   }
 
-  return score >= 2 ? "mean" : "playful";
+  return score >= 0 ? "playful" : "mean";
 }
 
 interface NekosResult {
@@ -97,7 +107,7 @@ export async function fetchAnimeGif(
   const res = await fetch(url);
 
   if (!res.ok) {
-    throw new Error(`API returned ${res.status} ${res.statusText}`);
+    throw new Error(`API returned ${res.status}`);
   }
 
   const text = await res.text();
@@ -107,16 +117,10 @@ export async function fetchAnimeGif(
   try {
     data = JSON.parse(text);
   } catch {
-    throw new Error(
-      `Invalid JSON returned from ${url}\n${text.substring(0, 200)}`
-    );
+    throw new Error(`Invalid JSON returned:\n${text.substring(0, 200)}`);
   }
 
   if (api === "waifu") {
-    if (!data.url) {
-      throw new Error("waifu.pics did not return a GIF URL.");
-    }
-
     return {
       url: data.url,
       animeName: "Unknown Anime",
@@ -124,8 +128,8 @@ export async function fetchAnimeGif(
     };
   }
 
-  if (!data.results || data.results.length === 0) {
-    throw new Error("nekos.best returned no GIFs.");
+  if (!data.results?.length) {
+    throw new Error("No GIF returned.");
   }
 
   return {
