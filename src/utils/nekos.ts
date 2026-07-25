@@ -104,33 +104,31 @@ export async function fetchAnimeGif(
       ? `https://api.waifu.pics/sfw/${endpoint}`
       : `https://nekos.best/api/v2/${endpoint}`;
 
-  const res = await fetch(url);
+  const res = await fetch(url, {
+    headers: {
+      "User-Agent": "BobBot (https://github.com/BobPlayz/BobBot1)",
+    },
+  });
 
- if (!res.ok) {
-  const body = await res.text();
+  if (!res.ok) {
+    const body = await res.text();
 
-  throw new Error(
-    `API ${res.status}\nURL: ${url}\nResponse:\n${body}`
-  );
-}
-
-  const text = await res.text();
-
-  let data: any;
-
-  try {
-    data = JSON.parse(text);
-  } catch {
-    throw new Error(`Invalid JSON returned:\n${text.substring(0, 200)}`);
+    throw new Error(
+      `API ${res.status}\nURL: ${url}\nResponse:\n${body}`
+    );
   }
 
   if (api === "waifu") {
+    const data = (await res.json()) as WaifuResult;
+
     return {
       url: data.url,
       animeName: "Unknown Anime",
       endpoint,
     };
   }
+
+  const data = (await res.json()) as NekosResult;
 
   if (!data.results?.length) {
     throw new Error("No GIF returned.");
