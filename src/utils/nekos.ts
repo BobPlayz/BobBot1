@@ -1,22 +1,25 @@
 export type ActionType = "slap" | "bite" | "pinch" | "kill";
 export type Mood = "playful" | "mean";
 
-const moodMap: Record<ActionType, Record<Mood, { api: "nekos" | "waifu"; endpoint: string }>> = {
+const moodMap: Record<
+  ActionType,
+  Record<Mood, { endpoint: string }>
+> = {
   slap: {
-    playful: { api: "nekos", endpoint: "pat" },
-    mean: { api: "nekos", endpoint: "slap" },
+    playful: { endpoint: "pat" },
+    mean: { endpoint: "slap" },
   },
   bite: {
-    playful: { api: "nekos", endpoint: "nom" },
-    mean: { api: "nekos", endpoint: "bite" },
+    playful: { endpoint: "nom" },
+    mean: { endpoint: "bite" },
   },
   pinch: {
-    playful: { api: "nekos", endpoint: "tickle" },
-    mean: { api: "nekos", endpoint: "kick" },
+    playful: { endpoint: "tickle" },
+    mean: { endpoint: "kick" },
   },
   kill: {
-    playful: { api: "nekos", endpoint: "poke" },
-    mean: { api: "waifu", endpoint: "kill" },
+    playful: { endpoint: "poke" },
+    mean: { endpoint: "punch" },
   },
 };
 
@@ -53,8 +56,8 @@ export const actionLabels = {
     mean: "pinched",
   },
   kill: {
-    playful: "pretended to eliminate",
-    mean: "eliminated",
+    playful: "playfully bonked",
+    mean: "punched",
   },
 };
 
@@ -89,24 +92,16 @@ interface NekosResult {
   }>;
 }
 
-interface WaifuResult {
-  url: string;
-}
-
 export async function fetchAnimeGif(
   action: ActionType,
   mood: Mood,
 ): Promise<{ url: string; animeName: string; endpoint: string }> {
-  const { api, endpoint } = moodMap[action][mood];
-
-  const url =
-    api === "waifu"
-      ? `https://api.waifu.pics/sfw/${endpoint}`
-      : `https://nekos.best/api/v2/${endpoint}`;
+  const { endpoint } = moodMap[action][mood];
+  const url = `https://nekos.best/api/v2/${endpoint}`;
 
   const res = await fetch(url, {
     headers: {
-      "User-Agent": "BobBot (https://github.com/BobPlayz/BobBot1)",
+      "User-Agent": "BobBot (https://github.com/blvkbob/BobBot)",
     },
   });
 
@@ -118,20 +113,10 @@ export async function fetchAnimeGif(
     );
   }
 
-  if (api === "waifu") {
-    const data = (await res.json()) as WaifuResult;
-
-    return {
-      url: data.url,
-      animeName: "Unknown Anime",
-      endpoint,
-    };
-  }
-
   const data = (await res.json()) as NekosResult;
 
   if (!data.results?.length) {
-    throw new Error("No GIF returned.");
+    throw new Error(`No GIF returned from ${endpoint}`);
   }
 
   return {
