@@ -106,9 +106,11 @@ export async function fetchAnimeGif(
 
   const res = await fetch(url);
 
-  if (!res.ok) {
+ if (!res.ok) {
+  const body = await res.text();
+
   throw new Error(
-    `API returned ${res.status} for ${url}`
+    `API ${res.status}\nURL: ${url}\nResponse:\n${body}`
   );
 }
 
