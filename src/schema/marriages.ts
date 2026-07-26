@@ -53,3 +53,4 @@ export type InsertMarriage =
 
 export type Marriage =
   typeof marriagesTable.$inferSelect;
+  

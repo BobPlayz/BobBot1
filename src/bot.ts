@@ -20,6 +20,8 @@ import {
 } from "./commands/economy.js";
 import { handleTicTacToe, handleConnectFour, handleTTButton, handleCFButton } from "./commands/games.js";
 import { handleEightBall, handlePoll, handlePollButton, handleUserInfo, handleServerInfo } from "./commands/fun.js";
+import { handleProposeCommand } from "./commands/propose.js";
+import { handleMarriageButton } from "./commands/marriage-buttons.js";
 
 const ACTION_COMMANDS: ActionType[] = ["slap", "bite", "pinch", "kill"];
 const PREFIX = "bob";
@@ -70,6 +72,12 @@ export async function startBot(): Promise<void> {
         else if (interaction.customId.startsWith("cf_"))   await handleCFButton(interaction);
         else if (interaction.customId === "giveaway_enter") await handleGiveawayEnter(interaction);
         else if (interaction.customId.startsWith("poll_")) await handlePollButton(interaction);
+        else if (
+  interaction.customId.startsWith("marry_accept_") ||
+  interaction.customId.startsWith("marry_decline_")
+) {
+  await handleMarriageButton(interaction);
+}
         return;
       }
 
@@ -101,6 +109,9 @@ export async function startBot(): Promise<void> {
         case "poll":        await handlePoll(interaction);          break;
         case "userinfo":    await handleUserInfo(interaction);      break;
         case "serverinfo":  await handleServerInfo(interaction);    break;
+        case "propose":
+  await handleProposeCommand(interaction);
+  break;
         default: logger.warn({ commandName }, "Unknown command");
       }
     } catch (err) {
