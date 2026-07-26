@@ -27,6 +27,7 @@ import {
   robCommand,
 } from "./commands/fun.js";
 import { proposeCommand } from "./commands/propose.js";
+import { partnerCommand } from "./commands/partner.js";
 import { logger } from "./logger.js";
 
 const allCommands = [
@@ -57,6 +58,7 @@ const allCommands = [
   serverInfoCommand,
 
   proposeCommand,
+  partnerCommand,
 ].map((c) => c.toJSON());
 
 export async function registerCommands(): Promise<void> {
