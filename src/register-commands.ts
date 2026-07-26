@@ -28,10 +28,12 @@ import {
 } from "./commands/fun.js";
 import { proposeCommand } from "./commands/propose.js";
 import { partnerCommand } from "./commands/partner.js";
+import { divorceCommand } from "./commands/divorce.js";
 import { logger } from "./logger.js";
 
 const allCommands = [
   ...actionCommands,
+
   announceCommand,
   giveawayCommand,
 
@@ -59,6 +61,7 @@ const allCommands = [
 
   proposeCommand,
   partnerCommand,
+  divorceCommand,
 ].map((c) => c.toJSON());
 
 export async function registerCommands(): Promise<void> {

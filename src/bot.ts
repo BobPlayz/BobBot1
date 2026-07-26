@@ -51,6 +51,10 @@ import {
 import { handleProposeCommand } from "./commands/propose.js";
 import { handleMarriageButton } from "./commands/marriage-buttons.js";
 import { handlePartnerCommand } from "./commands/partner.js";
+import {
+  handleDivorceCommand,
+  handleDivorceButton,
+} from "./commands/divorce.js";
 
 const ACTION_COMMANDS: ActionType[] = [
   "slap",
@@ -123,9 +127,7 @@ export async function startBot(): Promise<void> {
           );
 
           message
-            .reply(
-              "❌ Something went wrong!",
-            )
+            .reply("❌ Something went wrong!")
             .catch(() => {});
         });
       }
@@ -154,17 +156,13 @@ export async function startBot(): Promise<void> {
               "ttt_",
             )
           ) {
-            await handleTTButton(
-              interaction,
-            );
+            await handleTTButton(interaction);
           } else if (
             interaction.customId.startsWith(
               "cf_",
             )
           ) {
-            await handleCFButton(
-              interaction,
-            );
+            await handleCFButton(interaction);
           } else if (
             interaction.customId ===
             "giveaway_enter"
@@ -189,6 +187,17 @@ export async function startBot(): Promise<void> {
             )
           ) {
             await handleMarriageButton(
+              interaction,
+            );
+          } else if (
+            interaction.customId.startsWith(
+              "divorce_confirm_",
+            ) ||
+            interaction.customId.startsWith(
+              "divorce_cancel_",
+            )
+          ) {
+            await handleDivorceButton(
               interaction,
             );
           }
@@ -218,9 +227,7 @@ export async function startBot(): Promise<void> {
 
         switch (commandName) {
           case "announce":
-            await handleAnnounce(
-              interaction,
-            );
+            await handleAnnounce(interaction);
             break;
 
           case "giveaway":
@@ -230,51 +237,35 @@ export async function startBot(): Promise<void> {
             break;
 
           case "balance":
-            await handleBalance(
-              interaction,
-            );
+            await handleBalance(interaction);
             break;
 
           case "daily":
-            await handleDaily(
-              interaction,
-            );
+            await handleDaily(interaction);
             break;
 
           case "work":
-            await handleWork(
-              interaction,
-            );
+            await handleWork(interaction);
             break;
 
           case "fish":
-            await handleFish(
-              interaction,
-            );
+            await handleFish(interaction);
             break;
 
           case "hunt":
-            await handleHunt(
-              interaction,
-            );
+            await handleHunt(interaction);
             break;
 
           case "rob":
-            await handleRob(
-              interaction,
-            );
+            await handleRob(interaction);
             break;
 
           case "shop":
-            await handleShop(
-              interaction,
-            );
+            await handleShop(interaction);
             break;
 
           case "buy":
-            await handleBuy(
-              interaction,
-            );
+            await handleBuy(interaction);
             break;
 
           case "inventory":
@@ -296,9 +287,7 @@ export async function startBot(): Promise<void> {
             break;
 
           case "dice":
-            await handleDice(
-              interaction,
-            );
+            await handleDice(interaction);
             break;
 
           case "tictactoe":
@@ -320,9 +309,7 @@ export async function startBot(): Promise<void> {
             break;
 
           case "poll":
-            await handlePoll(
-              interaction,
-            );
+            await handlePoll(interaction);
             break;
 
           case "userinfo":
@@ -345,6 +332,12 @@ export async function startBot(): Promise<void> {
 
           case "partner":
             await handlePartnerCommand(
+              interaction,
+            );
+            break;
+
+          case "divorce":
+            await handleDivorceCommand(
               interaction,
             );
             break;
