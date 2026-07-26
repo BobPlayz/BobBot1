@@ -4,3 +4,4 @@ export * from "./inventory";
 export * from "./giveaways";
 export * from "./games";
 export * from "./marriages";
+export * from "./pending-proposals";

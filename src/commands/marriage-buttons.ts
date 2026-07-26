@@ -7,9 +7,14 @@ import {
 } from "discord.js";
 
 import {
-  areMarried,
+  getMarriage,
   createMarriage,
 } from "../database/marriages.js";
+
+import {
+  getProposal,
+  deleteProposal,
+} from "../database/proposals.js";
 
 export async function handleMarriageButton(
   interaction: ButtonInteraction,
@@ -25,7 +30,7 @@ export async function handleMarriageButton(
 
   const [, action, proposerId, targetId] = id.split("_");
 
-  // only the target can respond
+  // Only the target can respond
   if (interaction.user.id !== targetId) {
     await interaction.reply({
       content: "❌ Only the person being proposed to can respond.",
@@ -34,25 +39,62 @@ export async function handleMarriageButton(
     return;
   }
 
-  const disabledRow = new ActionRowBuilder<ButtonBuilder>();
+  const disabledRow =
+    new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setCustomId("accepted")
+        .setLabel("Accept")
+        .setEmoji("💚")
+        .setStyle(ButtonStyle.Success)
+        .setDisabled(true),
 
-  disabledRow.addComponents(
-    new ButtonBuilder()
-      .setCustomId("accepted")
-      .setLabel("Accept")
-      .setEmoji("💚")
-      .setStyle(ButtonStyle.Success)
-      .setDisabled(true),
+      new ButtonBuilder()
+        .setCustomId("declined")
+        .setLabel("Decline")
+        .setEmoji("💔")
+        .setStyle(ButtonStyle.Danger)
+        .setDisabled(true),
+    );
 
-    new ButtonBuilder()
-      .setCustomId("declined")
-      .setLabel("Decline")
-      .setEmoji("💔")
-      .setStyle(ButtonStyle.Danger)
-      .setDisabled(true),
+  // Make sure the proposal still exists
+  const proposal = await getProposal(
+    proposerId,
+    targetId,
   );
 
+  if (!proposal) {
+    await interaction.reply({
+      content:
+        "⌛ This proposal no longer exists or has expired.",
+      ephemeral: true,
+    });
+    return;
+  }
+
+  // Expired?
+  if (proposal.expiresAt.getTime() < Date.now()) {
+    await deleteProposal(proposal.id);
+
+    const embed = EmbedBuilder.from(
+      interaction.message.embeds[0],
+    )
+      .setColor(0xfaa61a)
+      .setTitle("⌛ Proposal Expired")
+      .setDescription(
+        "This marriage proposal has expired.",
+      );
+
+    await interaction.update({
+      embeds: [embed],
+      components: [disabledRow],
+    });
+
+    return;
+  }
+
   if (action === "decline") {
+    await deleteProposal(proposal.id);
+
     const embed = EmbedBuilder.from(
       interaction.message.embeds[0],
     )
@@ -70,17 +112,35 @@ export async function handleMarriageButton(
     return;
   }
 
-  // already married?
-  if (await areMarried(proposerId, targetId)) {
+  // Check whether either user got married while waiting
+  const proposerMarriage = await getMarriage(
+    proposerId,
+  );
+
+  const targetMarriage = await getMarriage(
+    targetId,
+  );
+
+  if (proposerMarriage || targetMarriage) {
+    await deleteProposal(proposal.id);
+
     await interaction.reply({
-      content: "❌ One of you is already married.",
+      content:
+        "❌ One of you is already married.",
       ephemeral: true,
     });
 
     return;
   }
 
-  await createMarriage(proposerId, targetId);
+  // Create marriage
+  await createMarriage(
+    proposerId,
+    targetId,
+  );
+
+  // Remove pending proposal
+  await deleteProposal(proposal.id);
 
   const embed = EmbedBuilder.from(
     interaction.message.embeds[0],
@@ -88,7 +148,7 @@ export async function handleMarriageButton(
     .setColor(0x57f287)
     .setTitle("💍 Marriage!")
     .setDescription(
-      `🎉 Congratulations!\n\n<@${proposerId}> and <@${targetId}> are now married! ❤️`,
+      `🎉 Congratulations!\n\n<@${proposerId}> and <@${targetId}> are now officially married! ❤️`,
     );
 
   await interaction.update({
