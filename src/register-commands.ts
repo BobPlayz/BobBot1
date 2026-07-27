@@ -47,6 +47,7 @@ const allCommands = [
   buyCommand,
   inventoryCommand,
   leaderboardCommand,
+  profileCommand,
 
   coinflipCommand,
   diceCommand,
@@ -94,3 +95,6 @@ export async function registerCommands(): Promise<void> {
     );
   }
 }
+import {
+  profileCommand,
+} from "./commands/profile.js";

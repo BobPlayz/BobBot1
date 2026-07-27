@@ -5,20 +5,27 @@ import {
   Events,
   type Interaction,
   type Message,
+  EmbedBuilder,
 } from "discord.js";
+
 import { logger } from "./logger.js";
 import { registerCommands } from "./register-commands.js";
 import { seedShop } from "./seed-shop.js";
+
 import {
   handleActionCommand,
   handleActionMessage,
 } from "./commands/actions.js";
+
 import type { ActionType } from "./utils/nekos.js";
+
 import { handleAnnounce } from "./commands/announce.js";
+
 import {
   handleGiveawayCommand,
   handleGiveawayEnter,
 } from "./commands/giveaway.js";
+
 import {
   handleBalance,
   handleWork,
@@ -34,12 +41,14 @@ import {
   handleCoinflip,
   handleDice,
 } from "./commands/economy.js";
+
 import {
   handleTicTacToe,
   handleConnectFour,
   handleTTButton,
   handleCFButton,
 } from "./commands/games.js";
+
 import {
   handleEightBall,
   handlePoll,
@@ -55,6 +64,8 @@ import {
   handleDivorceCommand,
   handleDivorceButton,
 } from "./commands/divorce.js";
+
+import { addXP } from "./database/server-levels.js";
 
 const ACTION_COMMANDS: ActionType[] = [
   "slap",
@@ -101,6 +112,47 @@ export async function startBot(): Promise<void> {
     Events.MessageCreate,
     async (message: Message) => {
       if (message.author.bot) return;
+      if (!message.guild) return;
+
+      // ==========================
+      // XP SYSTEM
+      // ==========================
+
+      try {
+        const result = await addXP(
+          message.guild.id,
+          message.author.id,
+          Math.floor(Math.random() * 11) + 15,
+        );
+
+        if (result.newLevel > result.oldLevel) {
+          const embed = new EmbedBuilder()
+            .setColor(0xf1c40f)
+            .setTitle("🎉 Level Up!")
+            .setDescription(
+              `${message.author} reached **Level ${result.newLevel}**!`,
+            )
+            .setThumbnail(
+              message.author.displayAvatarURL(),
+            )
+            .setFooter({
+              text: "More custom level cards coming soon...",
+            });
+
+          await message.reply({
+            embeds: [embed],
+          });
+        }
+      } catch (err) {
+        logger.error(
+          { err },
+          "Failed to award XP",
+        );
+      }
+
+      // ==========================
+      // PREFIX COMMANDS
+      // ==========================
 
       const content = message.content
         .trim()
@@ -127,7 +179,9 @@ export async function startBot(): Promise<void> {
           );
 
           message
-            .reply("❌ Something went wrong!")
+            .reply(
+              "❌ Something went wrong!",
+            )
             .catch(() => {});
         });
       }
@@ -156,13 +210,17 @@ export async function startBot(): Promise<void> {
               "ttt_",
             )
           ) {
-            await handleTTButton(interaction);
+            await handleTTButton(
+              interaction,
+            );
           } else if (
             interaction.customId.startsWith(
               "cf_",
             )
           ) {
-            await handleCFButton(interaction);
+            await handleCFButton(
+              interaction,
+            );
           } else if (
             interaction.customId ===
             "giveaway_enter"
@@ -222,6 +280,7 @@ export async function startBot(): Promise<void> {
             interaction,
             commandName as ActionType,
           );
+
           return;
         }
 
@@ -231,14 +290,17 @@ export async function startBot(): Promise<void> {
             break;
 
           case "giveaway":
-            await handleGiveawayCommand(
-              interaction,
-            );
+            await handleGiveawayCommand(interaction);
             break;
 
           case "balance":
             await handleBalance(interaction);
             break;
+             case "profile":
+  await handleProfileCommand(
+    interaction,
+  );
+  break;
 
           case "daily":
             await handleDaily(interaction);
@@ -269,21 +331,15 @@ export async function startBot(): Promise<void> {
             break;
 
           case "inventory":
-            await handleInventory(
-              interaction,
-            );
+            await handleInventory(interaction);
             break;
 
           case "leaderboard":
-            await handleLeaderboard(
-              interaction,
-            );
+            await handleLeaderboard(interaction);
             break;
 
           case "coinflip":
-            await handleCoinflip(
-              interaction,
-            );
+            await handleCoinflip(interaction);
             break;
 
           case "dice":
@@ -291,21 +347,15 @@ export async function startBot(): Promise<void> {
             break;
 
           case "tictactoe":
-            await handleTicTacToe(
-              interaction,
-            );
+            await handleTicTacToe(interaction);
             break;
 
           case "connectfour":
-            await handleConnectFour(
-              interaction,
-            );
+            await handleConnectFour(interaction);
             break;
 
           case "8ball":
-            await handleEightBall(
-              interaction,
-            );
+            await handleEightBall(interaction);
             break;
 
           case "poll":
@@ -313,33 +363,23 @@ export async function startBot(): Promise<void> {
             break;
 
           case "userinfo":
-            await handleUserInfo(
-              interaction,
-            );
+            await handleUserInfo(interaction);
             break;
 
           case "serverinfo":
-            await handleServerInfo(
-              interaction,
-            );
+            await handleServerInfo(interaction);
             break;
 
           case "propose":
-            await handleProposeCommand(
-              interaction,
-            );
+            await handleProposeCommand(interaction);
             break;
 
           case "partner":
-            await handlePartnerCommand(
-              interaction,
-            );
+            await handlePartnerCommand(interaction);
             break;
 
           case "divorce":
-            await handleDivorceCommand(
-              interaction,
-            );
+            await handleDivorceCommand(interaction);
             break;
 
           default:
@@ -380,3 +420,6 @@ export async function startBot(): Promise<void> {
 
   await client.login(token);
 }
+import {
+  handleProfileCommand,
+} from "./commands/profile.js";
