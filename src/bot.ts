@@ -422,4 +422,4 @@ export async function startBot(): Promise<void> {
 }
 import {
   handleProfileCommand,
-} from "./commands/profile.js";
+} from "./commands/profile.ts";
