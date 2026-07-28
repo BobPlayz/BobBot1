@@ -1,7 +1,9 @@
 import { REST, Routes } from "discord.js";
+
 import { actionCommands } from "./commands/actions.js";
 import { announceCommand } from "./commands/announce.js";
 import { giveawayCommand } from "./commands/giveaway.js";
+
 import {
   balanceCommand,
   workCommand,
@@ -11,10 +13,12 @@ import {
   buyCommand,
   inventoryCommand,
 } from "./commands/economy.js";
+
 import {
   tictactoeCommand,
   connectfourCommand,
 } from "./commands/games.js";
+
 import {
   eightBallCommand,
   pollCommand,
@@ -26,9 +30,12 @@ import {
   dailyCommand,
   robCommand,
 } from "./commands/fun.js";
+
 import { proposeCommand } from "./commands/propose.js";
 import { partnerCommand } from "./commands/partner.js";
 import { divorceCommand } from "./commands/divorce.js";
+import { profileCommand } from "./commands/profile.js";
+
 import { logger } from "./logger.js";
 
 const allCommands = [
@@ -70,7 +77,9 @@ export async function registerCommands(): Promise<void> {
   const clientId = process.env.DISCORD_CLIENT_ID;
 
   if (!token || !clientId) {
-    logger.error("Missing DISCORD_BOT_TOKEN or DISCORD_CLIENT_ID.");
+    logger.error(
+      "Missing DISCORD_BOT_TOKEN or DISCORD_CLIENT_ID.",
+    );
     return;
   }
 
@@ -84,10 +93,14 @@ export async function registerCommands(): Promise<void> {
 
     await rest.put(
       Routes.applicationCommands(clientId),
-      { body: allCommands },
+      {
+        body: allCommands,
+      },
     );
 
-    logger.info("Slash commands registered successfully.");
+    logger.info(
+      "Slash commands registered successfully.",
+    );
   } catch (err) {
     logger.error(
       { err },
@@ -95,6 +108,3 @@ export async function registerCommands(): Promise<void> {
     );
   }
 }
-import {
-  profileCommand,
-} from "./commands/profile.js";
