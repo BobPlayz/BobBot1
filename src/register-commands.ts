@@ -6,6 +6,7 @@ import { giveawayCommand } from "./commands/giveaway.js";
 
 import {
   balanceCommand,
+  payCommand,
   workCommand,
   fishCommand,
   huntCommand,
@@ -13,6 +14,13 @@ import {
   buyCommand,
   inventoryCommand,
 } from "./commands/economy.js";
+
+import {
+  bankCommand,
+  depositCommand,
+  withdrawCommand,
+  upgradeBankCommand,
+} from "./commands/bank.js";
 
 import {
   tictactoeCommand,
@@ -45,14 +53,22 @@ const allCommands = [
   giveawayCommand,
 
   balanceCommand,
+  payCommand,
   dailyCommand,
   workCommand,
   fishCommand,
   huntCommand,
   robCommand,
+
+  bankCommand,
+  depositCommand,
+  withdrawCommand,
+  upgradeBankCommand,
+
   shopCommand,
   buyCommand,
   inventoryCommand,
+
   leaderboardCommand,
   profileCommand,
 

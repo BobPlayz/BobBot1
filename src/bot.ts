@@ -16,6 +16,15 @@ import {
   handleActionCommand,
   handleActionMessage,
 } from "./commands/actions.js";
+import {
+  handleBankCommand,
+  handleDepositCommand,
+  handleWithdrawCommand,
+  handleUpgradeBankCommand,
+} from "./commands/bank.js";
+import {
+  handleProfileCommand,
+} from "./commands/profile.js";
 
 import type { ActionType } from "./utils/nekos.js";
 
@@ -28,6 +37,7 @@ import {
 
 import {
   handleBalance,
+  handlePay,
   handleWork,
   handleFish,
   handleHunt,
@@ -293,9 +303,20 @@ export async function startBot(): Promise<void> {
             await handleGiveawayCommand(interaction);
             break;
 
+          
           case "balance":
-            await handleBalance(interaction);
-            break;
+  await handleBalance(interaction);
+  break;
+
+case "pay":
+  await handlePay(interaction);
+  break;
+
+case "profile":
+  await handleProfileCommand(interaction);
+  break;
+            
+            
              case "profile":
   await handleProfileCommand(
     interaction,
@@ -329,6 +350,21 @@ export async function startBot(): Promise<void> {
           case "buy":
             await handleBuy(interaction);
             break;
+            case "bank":
+  await handleBankCommand(interaction);
+  break;
+
+case "deposit":
+  await handleDepositCommand(interaction);
+  break;
+
+case "withdraw":
+  await handleWithdrawCommand(interaction);
+  break;
+
+case "upgradebank":
+  await handleUpgradeBankCommand(interaction);
+  break;
 
           case "inventory":
             await handleInventory(interaction);
@@ -420,6 +456,3 @@ export async function startBot(): Promise<void> {
 
   await client.login(token);
 }
-import {
-  handleProfileCommand,
-} from "./commands/profile.js";
