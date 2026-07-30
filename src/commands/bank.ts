@@ -6,7 +6,7 @@ EmbedBuilder,
 
 import {
 getOrCreateUser,
-getOrCreateBank,
+applyBankInterest,
 depositCoins,
 withdrawCoins,
 upgradeBank,
@@ -19,21 +19,15 @@ export const bankCommand = new SlashCommandBuilder()
 export const depositCommand = new SlashCommandBuilder()
 .setName("deposit")
 .setDescription("Deposit coins into your bank")
-.addStringOption((option) =>
-option
-.setName("amount")
-.setDescription("Amount to deposit or 'all'")
-.setRequired(true),
+.addStringOption(o =>
+o.setName("amount").setDescription("Amount or 'all'").setRequired(true),
 );
 
 export const withdrawCommand = new SlashCommandBuilder()
 .setName("withdraw")
 .setDescription("Withdraw coins from your bank")
-.addStringOption((option) =>
-option
-.setName("amount")
-.setDescription("Amount to withdraw or 'all'")
-.setRequired(true),
+.addStringOption(o =>
+o.setName("amount").setDescription("Amount or 'all'").setRequired(true),
 );
 
 export const upgradeBankCommand = new SlashCommandBuilder()
@@ -44,58 +38,52 @@ export async function handleBankCommand(
 interaction: ChatInputCommandInteraction,
 ): Promise<void> {
 const user = await getOrCreateUser(interaction.user.id);
-const bank = await getOrCreateBank(interaction.user.id);
+const bank = await applyBankInterest(interaction.user.id);
 
-const embed = new EmbedBuilder()
+await interaction.reply({
+embeds: [
+new EmbedBuilder()
 .setColor(0x5865f2)
-.setTitle("🏦 Bank Account")
+.setTitle("🏦 Bank")
+.setDescription("your money is literally making money while you sleep 😭")
 .addFields(
 {
 name: "💰 Wallet",
-value: `${user.balance.toLocaleString()} coins`,
+value: `${user.balance.toLocaleString()} 🪙`,
 inline: true,
 },
 {
 name: "🏦 Bank",
-value: `${bank.balance.toLocaleString()} / ${bank.maxStorage.toLocaleString()} coins`,
-inline: true,
-},
-{
-name: "⭐ Bank Level",
-value: bank.bankLevel.toString(),
+value: `${bank.balance.toLocaleString()} / ${bank.maxStorage.toLocaleString()} 🪙`,
 inline: true,
 },
 {
 name: "📈 Interest",
-value: `${bank.interestRate}%`,
+value: `${bank.interestRate}% per day`,
 inline: true,
 },
-);
-
-await interaction.reply({ embeds: [embed] });
+{
+name: "⭐ Level",
+value: bank.bankLevel.toString(),
+inline: true,
+},
+),
+],
+});
 }
 
 export async function handleDepositCommand(
 interaction: ChatInputCommandInteraction,
 ): Promise<void> {
-const input = interaction.options.getString(
-"amount",
-true,
-);
-
+const input = interaction.options.getString("amount", true);
 const user = await getOrCreateUser(interaction.user.id);
 
-let amount: number;
-
-if (input.toLowerCase() === "all") {
-amount = user.balance;
-} else {
-amount = Number(input);
-}
+const amount =
+input.toLowerCase() === "all" ? user.balance : Number(input);
 
 if (!Number.isFinite(amount)) {
 await interaction.reply({
-content: "❌ Invalid amount.",
+content: "❌ that amount is cursed bro",
 ephemeral: true,
 });
 return;
@@ -111,51 +99,44 @@ ephemeral: true,
 return;
 }
 
-const embed = new EmbedBuilder()
+await interaction.reply({
+embeds: [
+new EmbedBuilder()
 .setColor(0x57f287)
 .setTitle("🏦 Deposit Successful")
 .addFields(
 {
 name: "Deposited",
-value: `${amount.toLocaleString()} coins`,
+value: `${amount.toLocaleString()} 🪙`,
 inline: true,
 },
 {
 name: "Wallet",
-value: `${result.wallet!.toLocaleString()} coins`,
+value: `${result.wallet.toLocaleString()} 🪙`,
 inline: true,
 },
 {
 name: "Bank",
-value: `${result.bank!.toLocaleString()} coins`,
+value: `${result.bank.toLocaleString()} 🪙`,
 inline: true,
 },
-);
-
-await interaction.reply({ embeds: [embed] });
+),
+],
+});
 }
 
 export async function handleWithdrawCommand(
 interaction: ChatInputCommandInteraction,
 ): Promise<void> {
-const input = interaction.options.getString(
-"amount",
-true,
-);
+const input = interaction.options.getString("amount", true);
+const bank = await applyBankInterest(interaction.user.id);
 
-const bank = await getOrCreateBank(interaction.user.id);
-
-let amount: number;
-
-if (input.toLowerCase() === "all") {
-amount = bank.balance;
-} else {
-amount = Number(input);
-}
+const amount =
+input.toLowerCase() === "all" ? bank.balance : Number(input);
 
 if (!Number.isFinite(amount)) {
 await interaction.reply({
-content: "❌ Invalid amount.",
+content: "❌ that amount is cursed bro",
 ephemeral: true,
 });
 return;
@@ -171,28 +152,30 @@ ephemeral: true,
 return;
 }
 
-const embed = new EmbedBuilder()
+await interaction.reply({
+embeds: [
+new EmbedBuilder()
 .setColor(0x3498db)
 .setTitle("💸 Withdrawal Successful")
 .addFields(
 {
 name: "Withdrawn",
-value: `${amount.toLocaleString()} coins`,
+value: `${amount.toLocaleString()} 🪙`,
 inline: true,
 },
 {
 name: "Wallet",
-value: `${result.wallet!.toLocaleString()} coins`,
+value: `${result.wallet.toLocaleString()} 🪙`,
 inline: true,
 },
 {
 name: "Bank",
-value: `${result.bank!.toLocaleString()} coins`,
+value: `${result.bank.toLocaleString()} 🪙`,
 inline: true,
 },
-);
-
-await interaction.reply({ embeds: [embed] });
+),
+],
+});
 }
 
 export async function handleUpgradeBankCommand(
@@ -202,23 +185,23 @@ const result = await upgradeBank(interaction.user.id);
 
 if (!result.success) {
 await interaction.reply({
-content: `❌ You need **${result.cost!.toLocaleString()} coins** to upgrade your bank.`,
+content: `❌ need **${result.cost.toLocaleString()} 🪙** first`,
 ephemeral: true,
 });
 return;
 }
 
-const embed = new EmbedBuilder()
+await interaction.reply({
+embeds: [
+new EmbedBuilder()
 .setColor(0xf1c40f)
-.setTitle("⭐ Bank Upgraded!")
-.setDescription(
-`Your bank is now **Level ${result.newLevel!}**!`,
-)
+.setTitle("⭐ Bank Upgraded")
+.setDescription(`Level **${result.newLevel}** unlocked.`)
 .addFields({
-name: "New Storage Capacity",
-value: `${result.newStorage!.toLocaleString()} coins`,
+name: "New Storage",
+value: `${result.newStorage.toLocaleString()} 🪙`,
 inline: true,
+}),
+],
 });
-
-await interaction.reply({ embeds: [embed] });
 }

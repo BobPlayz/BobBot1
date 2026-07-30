@@ -29,7 +29,7 @@ export const bankTable = pgTable("bank", {
 
   interestRate: integer("interest_rate")
     .notNull()
-    .default(1),
+    .default(10),
 
   totalDeposited: integer("total_deposited")
     .notNull()
@@ -38,6 +38,15 @@ export const bankTable = pgTable("bank", {
   totalWithdrawn: integer("total_withdrawn")
     .notNull()
     .default(0),
+
+  lastInterestClaim: timestamp(
+    "last_interest_claim",
+    {
+      withTimezone: true,
+    },
+  )
+    .notNull()
+    .defaultNow(),
 
   createdAt: timestamp("created_at", {
     withTimezone: true,
