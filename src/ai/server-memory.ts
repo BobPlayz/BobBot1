@@ -28,7 +28,7 @@ export function observeServerMessage(
     guildId,
     setTimeout(
       () => extractServerMemory(guildId),
-      5 * 60 * 1000,
+      10 * 1000
     ),
   );
 }

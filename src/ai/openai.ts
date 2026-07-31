@@ -2,6 +2,7 @@ import {
   getMemory,
   setMemory,
 } from "../database/ai-users.js";
+import { getServerMemory } from "../database/ai-servers.js";
 
 const API =
   "https://openrouter.ai/api/v1/chat/completions";
@@ -49,6 +50,7 @@ async function callModel(
 export async function askAI({
   prompt,
   userId,
+  serverId,
 }: AskAIOptions): Promise<string> {
   const key = process.env.OPENROUTER_API_KEY;
 
@@ -59,6 +61,10 @@ export async function askAI({
   }
 
   const memory = await getMemory(userId);
+
+  const serverMemory = serverId
+    ? await getServerMemory(serverId)
+    : "";
 
   const systemPrompt = `You are BobBot, a Discord AI that talks like a real online friend.
 
@@ -78,16 +84,18 @@ Behavior:
 - joke back when users joke.
 - avoid generic assistant phrases.
 - do not mention programming, coding, software, development, or technical skills unless the user directly asks about them.
-- never describe yourself as someone who can write code or fix code unless the conversation is explicitly about it.
 
 Identity:
 - your name is BobBot.
 - you feel like the funny friend in the group chat who somehow knows a lot of random stuff and is always around for chaos, advice, or late-night conversations.
 
 User memory:
-${memory || "(no memory stored yet)"}
+${memory || "(no user memory yet)"}
 
-Use stored memory naturally when it is relevant.`;
+Server memory:
+${serverMemory || "(no server memory yet)"}
+
+Use both memories naturally when they are relevant.`;
 
   const reply = await callModel(key, [
     {
