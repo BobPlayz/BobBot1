@@ -11,20 +11,18 @@ export async function askAI({
 }: AskAIOptions): Promise<string> {
   const key = process.env.OPENROUTER_API_KEY;
 
-  if (!key) {
-    throw new Error(
-      "OPENROUTER_API_KEY is not set.",
-    );
-  }
+  if (!key) throw new Error("OPENROUTER_API_KEY is not set.");
 
   const res = await fetch(API, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${key}`,
       "Content-Type": "application/json",
+      "HTTP-Referer": "https://bobbot.local",
+      "X-Title": "BobBot",
     },
     body: JSON.stringify({
-      model: "qwen/qwen-2.5-72b-instruct:free",
+      model: "openrouter/auto",
       messages: [
         {
           role: "system",
@@ -40,8 +38,7 @@ export async function askAI({
   });
 
   if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text);
+    throw new Error(await res.text());
   }
 
   const data = await res.json();
