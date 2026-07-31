@@ -14,6 +14,7 @@ import {
   buyCommand,
   inventoryCommand,
 } from "./commands/economy.js";
+import { aiCommand } from "./commands/ai.js";
 
 import {
   bankCommand,
@@ -82,6 +83,8 @@ const allCommands = [
   pollCommand,
   userInfoCommand,
   serverInfoCommand,
+
+  aiCommand,
 
   proposeCommand,
   partnerCommand,

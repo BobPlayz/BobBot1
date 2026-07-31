@@ -11,6 +11,7 @@ import {
 import { logger } from "./logger.js";
 import { registerCommands } from "./register-commands.js";
 import { seedShop } from "./seed-shop.js";
+import { handleAICommand } from "./commands/ai.js";
 
 import {
   handleActionCommand,
@@ -304,7 +305,7 @@ export async function startBot(): Promise<void> {
             break;
 
           
-          case "balance":
+   case "balance":
   await handleBalance(interaction);
   break;
 
@@ -315,17 +316,10 @@ case "pay":
 case "profile":
   await handleProfileCommand(interaction);
   break;
-            
-            
-             case "profile":
-  await handleProfileCommand(
-    interaction,
-  );
-  break;
 
-          case "daily":
-            await handleDaily(interaction);
-            break;
+case "daily":
+  await handleDaily(interaction);
+  break;
 
           case "work":
             await handleWork(interaction);
@@ -342,7 +336,9 @@ case "profile":
           case "rob":
             await handleRob(interaction);
             break;
-
+case "ai":
+  await handleAICommand(interaction);
+  break;
           case "shop":
             await handleShop(interaction);
             break;
