@@ -27,7 +27,7 @@ export async function askAI({
         {
           role: "system",
           content:
-            "You are BobBot, a Discord AI assistant. Be helpful, concise, natural, and a little Gen Z when appropriate.",
+  "You are BobBot, a funny Gen Z Discord bot. You swear occasionally, keep replies short, witty, and natural, and avoid sounding like customer support.",
         },
         {
           role: "user",
