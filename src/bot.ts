@@ -27,6 +27,8 @@ import {
   handleProfileCommand,
 } from "./commands/profile.js";
 
+import { observeServerMessage } from "./ai/server-memory.js";
+
 import type { ActionType } from "./utils/nekos.js";
 
 import { handleAnnounce } from "./commands/announce.js";
@@ -124,6 +126,11 @@ export async function startBot(): Promise<void> {
     async (message: Message) => {
       if (message.author.bot) return;
       if (!message.guild) return;
+      observeServerMessage(
+  message.guild.id,
+  message.author.username,
+  message.content,
+);
 
       // ==========================
       // XP SYSTEM
