@@ -1,8 +1,4 @@
-import OpenAI from "openai";
-
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const API = "https://openrouter.ai/api/v1/chat/completions";
 
 type AskAIOptions = {
   prompt: string;
@@ -12,30 +8,46 @@ type AskAIOptions = {
 
 export async function askAI({
   prompt,
-  serverId,
-  userId,
 }: AskAIOptions): Promise<string> {
-  const response = await client.responses.create({
-    model: "gpt-5",
-    input: [
-      {
-        role: "system",
-        content:
-          "You are BobBot, a Discord AI assistant. Be helpful, concise, and natural. You can later be customized per server and per user.",
-      },
-      {
-        role: "user",
-        content: prompt,
-      },
-    ],
-    metadata: {
-      serverId: serverId ?? "dm",
-      userId,
+  const key = process.env.OPENROUTER_API_KEY;
+
+  if (!key) {
+    throw new Error(
+      "OPENROUTER_API_KEY is not set.",
+    );
+  }
+
+  const res = await fetch(API, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${key}`,
+      "Content-Type": "application/json",
     },
+    body: JSON.stringify({
+      model: "deepseek/deepseek-chat:free",
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are BobBot, a Discord AI assistant. Be helpful, concise, natural, and a little Gen Z when appropriate.",
+        },
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+    }),
   });
 
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text);
+  }
+
+  const data = await res.json();
+
   return (
-    response.output_text ||
+    data.choices?.[0]?.message?.content ??
     "my brain lagged for a sec 😭"
   );
 }
